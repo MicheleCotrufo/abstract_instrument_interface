@@ -9,7 +9,7 @@ with open("requirements.txt") as f:
     required_packages = f.read().splitlines()
 
 setuptools.setup(name='abstract_instrument_interface',
-      version='0.4',
+      version='0.5',
       description='This package contains abstract classes for interfaces and GUIs which are used by all instruments compatible with Ergastirio',
       long_description=long_description,
       long_description_content_type='text/markdown',
