@@ -185,6 +185,14 @@ class abstract_interface(QtCore.QObject):
         self.logger.info(f"Trigger sent.")
         self.trigger[0]()
 
+    def receive_trigger(self,**kwargs):
+        '''
+        This method allows the device to receive a trigger from an external script (for example, when the device is used inside Ergastirio). 
+        The function defined here in the abstract class is just a placeholder. The specific action that happens when the instrument
+        is triggered will be coded in the corresponding instrument interface
+        '''
+        pass
+
     def update(self):
         if hasattr(self,'trigger'):
             if not(self.trigger==None):
