@@ -90,7 +90,8 @@ class ramp(QtCore.QObject):
                                     func_set_value = None, 
                                     func_read_current_value = None, 
                                     list_functions_step_not_ended=[],  
-                                    list_functions_step_has_ended=[],  
+                                    list_functions_step_has_ended=[],
+                                    list_functions_ramp_started=[],
                                     list_functions_ramp_ended =[]):
         '''
         func_move
@@ -125,6 +126,7 @@ class ramp(QtCore.QObject):
         self.func_check_step_has_ended = func_check_step_has_ended
         self.list_functions_step_not_ended = list_functions_step_not_ended
         self.list_functions_step_has_ended = list_functions_step_has_ended
+        self.list_functions_ramp_started = list_functions_ramp_started
         self.list_functions_ramp_ended = list_functions_ramp_ended
 
     def set_ramp_settings(self,settings):
@@ -221,6 +223,8 @@ class ramp(QtCore.QObject):
             self.initial_value = self.func_read_current_value()
         self.logger.info(f"Starting ramp...")
         self.sig_ramp.emit(self.SIG_RAMP_STARTED)
+        for action in self.list_functions_ramp_started:
+            action() 
         self.doing_ramp = True
         self.run_sequence(actions)
         
