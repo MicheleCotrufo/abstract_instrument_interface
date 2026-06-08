@@ -76,7 +76,7 @@ class abstract_interface(QtCore.QObject):
     SIG_DISCONNECTED = 3
     SIG_DISCONNECTING = 4
     
-    def __init__(self, app ,name_logger=None,config_dict=None, **kwargs):
+    def __init__(self, app, name_logger=None, config_dict=None, **kwargs):
        
         self.app = app
         self._verbose = True            #Keep track of whether this instance of the interface should produce logs or not
@@ -188,8 +188,8 @@ class abstract_interface(QtCore.QObject):
     def receive_trigger(self,**kwargs):
         '''
         This method allows the device to receive a trigger from an external script (for example, when the device is used inside Ergastirio). 
-        The function defined here in the abstract class is just a placeholder. The specific action that happens when the instrument
-        is triggered will be coded in the corresponding instrument interface
+        The function defined here in the abstract_interface class is just a placeholder. The specific action that happens when the instrument
+        is triggered will be coded in the corresponding child class of the instrument interface
         '''
         pass
 

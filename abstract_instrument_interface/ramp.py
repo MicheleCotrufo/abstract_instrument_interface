@@ -34,7 +34,7 @@ class ramp(QtCore.QObject):
     ## SIGNALS THAT WILL BE USED TO COMMUNICATE WITH THE GUI
     #                                                           | Triggered when ...                                                                | Sends as parameter    
     #                                                       #   -----------------------------------------------------------------------------------------------------------------------         
-    sig_ramp = QtCore.pyqtSignal(int)                       #   | Ramp event                                                                        | 
+    sig_ramp = QtCore.pyqtSignal(int)                       #   | Ramp event                                                                        | One of the identifiers SIG_RAMP_STARTED, SIG_RAMP_STEP_STARTED, SIG_RAMP_STEP_ENDED, etc.
     sig_ramp_settings = QtCore.pyqtSignal(dict)             #   | One of the settings changed, or when the GUI requested it                         |
     sig_ramp_info = QtCore.pyqtSignal(list)                 #   | General info released by the model, typically used in a status label in the GUI   |
 
@@ -95,7 +95,7 @@ class ramp(QtCore.QObject):
                                     list_functions_ramp_ended =[]):
         '''
         func_move
-            function, takes a single parameter as input
+            function, must take a single parameter as input. The input parameter is how much the instrument "moves"
         func_check_step_has_ended
             function, takes no parameter in input, returns true when the step has ended, false othwerwise
         func_trigger
@@ -103,7 +103,7 @@ class ramp(QtCore.QObject):
         func_trigger_continue_ramp
             function, takes no parameter as input. It can be set to None.
             If different from None, after the function func_trigger is invoked, the ramp will wait until
-            func_trigger_continue_ramp() == True before doing the next ramp steps. (Note: this waiting time adds up to the wime set by wait1 and wait2)
+            func_trigger_continue_ramp() == True before doing the next ramp steps. (Note: this waiting time adds up to the time set by wait1 and wait2)
         func_set_value
             function, no input parameter. Sets the instrument connected to this ramp object to a given value
         func_read_current_value
