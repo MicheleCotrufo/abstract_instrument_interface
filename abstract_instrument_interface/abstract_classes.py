@@ -54,11 +54,7 @@ class abstract_interface(QtCore.QObject):
 
         update()
 
-        generate_list_actions(initial_trigger, stepsize, wait1, wait2, numb_steps, add_reverse = False, repeat_ramp=1)
-            Generate a list of actions that define a ramp
-
         check_property_until(self, property_to_check, values_list, actions_list, refresh_time=0.1)
-
 
         close()
             Closes this interface, disconnect device (if any) and close plot window
@@ -244,11 +240,12 @@ class abstract_interface(QtCore.QObject):
     def close(self):     
         self.sig_close.emit()
         self.save_settings()
-        try:
-            if (self.instrument.connected == True):
-                self.disconnect_device()
-        except Exception as e:
-            self.logger.error(f"{e}")
+        if hasattr(self, "instrument"):
+            try:
+                if (self.instrument.connected == True):
+                    self.disconnect_device()
+            except Exception as e:
+                self.logger.error(f"{e}")
         
 class abstract_gui():
     def __init__(self,interface=None,parent=None):
