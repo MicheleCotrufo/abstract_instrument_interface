@@ -309,7 +309,8 @@ class ramp(QtCore.QObject):
                 for i in range(numb_steps):
                     action.append({'action':'move', 'stepsize':-stepsize})
                     action.append({'action':'wait', 'time':wait1})
-                    action.append({'action':'send_trigger'})
+                    if send_trigger:
+                        action.append({'action':'send_trigger'})
                     action.append({'action':'wait', 'time':wait2})
         if reset_after_ramp:
             action.append({'action':'reset_initial_value'})    
