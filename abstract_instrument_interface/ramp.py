@@ -1,5 +1,3 @@
-from typing_extensions import Self
-from xml.dom.expatbuilder import parseFragmentString
 from abstract_instrument_interface import abstract_classes
 import PyQt5.QtCore as QtCore
 import PyQt5.QtWidgets as Qt# QApplication, QWidget, QMainWindow, QPushButton, QHBoxLayout
