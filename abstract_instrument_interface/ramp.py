@@ -87,10 +87,10 @@ class ramp(QtCore.QObject):
                                     func_trigger_continue_ramp = None,
                                     func_set_value = None, 
                                     func_read_current_value = None, 
-                                    list_functions_step_not_ended=[],  
-                                    list_functions_step_has_ended=[],
-                                    list_functions_ramp_started=[],
-                                    list_functions_ramp_ended =[]):
+                                    list_functions_step_not_ended=None,  
+                                    list_functions_step_has_ended=None,
+                                    list_functions_ramp_started=None,
+                                    list_functions_ramp_ended =None):
         '''
         func_move
             function, must take a single parameter as input. The input parameter is how much the instrument "moves"
@@ -122,10 +122,10 @@ class ramp(QtCore.QObject):
         self.func_set_value = func_set_value      # This and next function are useful for resetting the instrument back to its original position. They can be set to none.
         self.func_read_current_value = func_read_current_value  
         self.func_check_step_has_ended = func_check_step_has_ended
-        self.list_functions_step_not_ended = list_functions_step_not_ended
-        self.list_functions_step_has_ended = list_functions_step_has_ended
-        self.list_functions_ramp_started = list_functions_ramp_started
-        self.list_functions_ramp_ended = list_functions_ramp_ended
+        self.list_functions_step_not_ended = list_functions_step_not_ended or []
+        self.list_functions_step_has_ended = list_functions_step_has_ended or []
+        self.list_functions_ramp_started = list_functions_ramp_started or []
+        self.list_functions_ramp_ended = list_functions_ramp_ended or []
 
     def set_ramp_settings(self,settings):
         self.settings.update(settings)
