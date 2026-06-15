@@ -90,8 +90,8 @@ class abstract_interface(QtCore.QObject):
                 self.logger.info(f"Loading settings for this device from the file \'{self.config_file}\'...")
                 with open(self.config_file) as jsonfile:
                     config_dict = json.load(jsonfile)
-            except:
-                self.logger.info(f"Error when loading file \'{self.config_file}\'.")
+            except Exception as e:
+                self.logger.info(f"Error when loading file \'{self.config_file}\': {e}.")
                 pass
         if config_dict:
             self.load_settings(config_dict)
@@ -167,6 +167,12 @@ class abstract_interface(QtCore.QObject):
         if not(callable(external_function)):
             self.logger.error(f"Input parameter external_function must be a valid function")  
             return  
+        try:
+            delay = float(delay)
+            if delay < 0:
+                raise ValueError()
+        except (TypeError,ValueError):
+            self.logger.error(f"Input parameter delay must be a valid and positive number.")  
         self.logger.info(f"Creating a trigger for this device...")
         self.trigger = [external_function, delay]
 
@@ -262,6 +268,7 @@ class abstract_gui():
 
     def initialize(self):
         #self.container is a layout object (either QVBoxLayout,QHBoxLayout or QGroupBox) which is created in the create_widgets() method of the child GUI class
+        if not hasattr(self, 'container'): raise RuntimeError("create_widgets() must be called before initialize()")
         self.parent.setLayout(self.container) 
         self.parent.resize(self.parent.minimumSize())
         return
