@@ -153,12 +153,12 @@ class ramp(QtCore.QObject):
                 self.logger.error(f"{setting_name} must be a valid and non-negative number.")
                 flag_emit_current_settings = True
         if setting_name in ['ramp_send_initial_trigger','ramp_send_trigger','ramp_reverse','ramp_reset']:   #boolean
-            try: 
+            if setting_value not in (True, False, 0, 1, '0', '1', 'true', 'false'):
+                self.logger.error(f"{setting_name} must be a boolean(-like) variable.")
+                lag_emit_current_settings = True
+            else:
                 setting_value = bool(setting_value)
                 flag_succesful = True
-            except ValueError:
-                self.logger.error(f"{setting_name} must be a boolean(-like) variable.")
-                flag_emit_current_settings = True
         if setting_name in ['ramp_numb_steps','ramp_repeat']:                                               #integer, positive
             try: 
                 setting_value = int(setting_value)
