@@ -334,6 +334,7 @@ class ramp(QtCore.QObject):
         self.child_ramp.send_ramp_status()
 
     def disconnect_from_ramp_child(self):
+        if not self.has_child_ramp: return #Suggested by Claude
         self.func_trigger = self.func_trigger_old    
         self.func_trigger_continue_ramp = self.func_trigger_continue_ramp_old 
         self.has_child_ramp = False
