@@ -1,3 +1,5 @@
+''' Note: most of docstrings in this file have been generated automatically by Claude. AI can make mistakes'''
+
 from abstract_instrument_interface import abstract_classes
 import PyQt5.QtCore as QtCore
 import PyQt5.QtWidgets as Qt# QApplication, QWidget, QMainWindow, QPushButton, QHBoxLayout
@@ -17,13 +19,13 @@ class ramp(QtCore.QObject):
 
     Signals that need to be defined as attributes of self.interface, together with their flags:
 
-    +------------------------------------------+---------------------------------------------+---------------------------------------------------------------------------------------------+
-    | Signal                                   | Triggered when ...                          | Parameter sent                                                                              |
-    +==========================================+=============================================+=============================================================================================+
-    | sig_connected = pyqtSignal(int)          | The connection status of interface changed  | SIG_CONNECTED, SIG_DISCONNECTED, SIG_CONNECTING, SIG_DISCONNECTING                         |
-    +------------------------------------------+---------------------------------------------+---------------------------------------------------------------------------------------------+
-    | sig_change_moving_status = pyqtSignal(int) | The movement status of interface changed  | SIG_MOVEMENT_STARTED, SIG_MOVEMENT_ENDED                                                    |
-    +------------------------------------------+---------------------------------------------+---------------------------------------------------------------------------------------------+
+    +--------------------------------------------+---------------------------------------------+---------------------------------------------------------------------------------------------+
+    | Signal                                     | Triggered when ...                          | Parameter sent                                                                              |
+    +============================================+=============================================+=============================================================================================+
+    | sig_connected = pyqtSignal(int)            | The connection status of interface changed  | SIG_CONNECTED, SIG_DISCONNECTED, SIG_CONNECTING, SIG_DISCONNECTING                         |
+    +------------------------------------------+-----------------------------------------------+---------------------------------------------------------------------------------------------+
+    | sig_change_moving_status = pyqtSignal(int) | The movement status of interface changed    | SIG_MOVEMENT_STARTED, SIG_MOVEMENT_ENDED                                                    |
+    +------------------------------------------+-----------------------------------------------+---------------------------------------------------------------------------------------------+
 
     The interface will emit these signals to notify of changes.
     """
