@@ -13,53 +13,114 @@ graphics_dir = os.path.join(os.path.dirname(__file__), 'graphics')
 
 class abstract_interface(QtCore.QObject):
     """
-        Abstract class for high-level interface with devices
-        ...
+    Abstract base class for high-level interfaces with laboratory devices.
 
-        Attributes
-        ----------
-        settings : dict
-            settings of this interface (typically loaded from a .json file or set in the __init__ method of the instance)
-        output : dict
-            a dictionary containing the output data created by this interface
-        app : Qt.QApplication
-            The pyqt5 QApplication() object
-        verbose : bool          defined as @property, can be read and written
-            Set whether the logger of this interface will be verbose or not (default = True)
-        name_logger : str       defined as @property, can be read and written
-            Name of the logger of this interface (default = __package__). The logger formatter will be "[name_logger]:...".
+    Subclasses are expected to wrap a low-level driver, implement ``connect_device``,
+    ``disconnect_device``, and ``update``, and call ``super().__init__(**kwargs)`` from
+    their own ``__init__``. All logging and settings persistence are handled here. This class 
+    also handles some general-purpose Qt signal and trigger logic 
 
-        Methods
-        -------
+    Class-level attributes
+    ----------------------
+    output : dict
+        Dictionary holding the most recently acquired output data of this interface.
+        Subclasses typically populate it in their ``update`` method (e.g.
+        ``self.output['Power'] = value``). Important: the dictionary must be 
+        re-assigned as an instance attribute in the subclass ``__init__``.
+        Otherwise it is shared across all instances of a given
+        subclass unless, which would lead to undesired effects. 
+    settings : dict
+        Dictionary of persistent settings for this interface (e.g. refresh time,
+        default wavelength). Typically populated with default values in the subclass
+        ``__init__``, then overwritten by values loaded from ``config.json`` via
+        :meth:`load_settings`. Same sharing caveat as :attr:`output` above.
+    sig_connected : QtCore.pyqtSignal(int)
+        Emitted whenever the connection status of this interface changes. The integer
+        parameter is one of the ``SIG_*`` constants below.
+    sig_close : QtCore.pyqtSignal()
+        Emitted at the start of :meth:`close`, before settings are saved and the
+        device is disconnected.
+    SIG_CONNECTED : int (= 1)
+        Status code emitted by :attr:`sig_connected` when the device is connected.
+    SIG_CONNECTING : int (= 2)
+        Status code emitted by :attr:`sig_connected` while a connection attempt is
+        in progress.
+    SIG_DISCONNECTED : int (= 3)
+        Status code emitted by :attr:`sig_connected` when the device is disconnected.
+    SIG_DISCONNECTING : int (= 4)
+        Status code emitted by :attr:`sig_connected` while disconnection is in
+        progress.
 
-        load_settings(dictionary)
+    Instance attributes (set in ``__init__``)
+    ------------------------------------------
+    app : Qt.QApplication
+        The PyQt5 ``QApplication`` object shared by the whole program.
+    logger : logging.Logger
+        Logger used throughout this interface. Created (or retrieved) automatically
+        when :attr:`name_logger` is first set. Format: ``"[name_logger]: %(message)s"``.
+    config_file : str
+        Absolute path to the ``config.json`` file located in the same folder as the
+        child class module. Settings are loaded from this file on startup (if it
+        exists) and saved back to it by :meth:`save_settings`.
+    trigger : list or None
+        Set by :meth:`set_trigger`. Either ``None`` (no trigger configured) or a
+        two-element list ``[external_function, delay]``. Not present as an attribute
+        at all until :meth:`set_trigger` is called for the first time.
 
-        save_settings()
-                
-        set_disconnected_state()
+    Properties
+    ----------
+    verbose : bool
+        Controls whether the logger produces output. When ``True`` (default), the
+        logger level is ``logging.INFO``; when ``False``, it is set to
+        ``logging.CRITICAL``, effectively silencing all normal messages.
+    name_logger : str
+        Name of this interface's logger (default: the package name of the child
+        class, resolved via ``importlib``). Setting this property creates or
+        retrieves the corresponding ``logging.Logger``, stores it in :attr:`logger`,
+        attaches a ``StreamHandler`` (if none is present), and applies the current
+        :attr:`verbose` level.
 
-        set_connecting_state()
-
-        set_connected_state()
-
-        set_trigger(external_function,delay=0)
-            Set this device as a trigger for other operations. Every time that this interface object acquires data from the device (i.e. every time 
-            the function self.update is executed), the function external_function, passed as input parameter, is also called. 
-            external_function must be a valid function which does not require any input parameter.
-            The optional parameter delay sets a delay (in seconds) between the call to the function self.update and the call to the function external_function
-            When external_function is set to None, the trigger is effectively disabled.
-
-        send_trigger
-
-        _send_trigger
-
-        update()
-
-        check_property_until(self, property_to_check, values_list, actions_list, refresh_time=0.1)
-
-        close()
-            Closes this interface, disconnect device (if any) and close plot window
-
+    Methods
+    -------
+    load_settings(dictionary)
+        Merge ``dictionary`` into :attr:`settings` via ``dict.update``.
+    save_settings()
+        Write :attr:`settings` to :attr:`config_file` as indented, sorted JSON.
+        Called automatically by :meth:`close`.
+    read_current_output()
+        Return the current :attr:`output` dictionary.
+    set_connected_state()
+        Emit :attr:`sig_connected` with :attr:`SIG_CONNECTED`.
+    set_connecting_state()
+        Emit :attr:`sig_connected` with :attr:`SIG_CONNECTING`.
+    set_disconnected_state()
+        Emit :attr:`sig_connected` with :attr:`SIG_DISCONNECTED`.
+    set_disconnecting_state()
+        Emit :attr:`sig_connected` with :attr:`SIG_DISCONNECTING`.
+    set_trigger(external_function, delay=0)
+        Configure a trigger: ``external_function`` (a no-argument callable, or
+        ``None`` to disable) will be called every time :meth:`update` runs, after an
+        optional ``delay`` in seconds.
+    send_trigger()
+        Fire the currently configured trigger, with or without delay. Called
+        automatically by :meth:`update`.
+    _send_trigger()
+        Internal helper: call ``self.trigger[0]()`` and log the event. Called by
+        :meth:`send_trigger`, either directly or via ``QTimer.singleShot``.
+    receive_trigger(**kwargs)
+        Placeholder hook called when this interface is triggered by an external
+        source (e.g. from Ergastirio). Override in subclasses to define the response.
+    update()
+        Base implementation: if a trigger has been configured and is not ``None``,
+        call :meth:`send_trigger`. Subclasses should call ``super().update()`` after
+        acquiring new data from the device.
+    check_property_until(property_to_check, values_list, actions_list, refresh_time=0.1)
+        Static polling helper. Periodically evaluates ``property_to_check()`` and,
+        for each matching entry in ``values_list``, executes the corresponding list
+        of callbacks in ``actions_list``. Stops rescheduling itself once the last
+        entry in ``values_list`` is matched.
+    close()
+        Emit :attr:`sig_close`, save settings, and disconnect the device if connected.
     """
 
     output = dict()
