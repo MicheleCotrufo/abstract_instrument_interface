@@ -230,7 +230,7 @@ class ramp(QtCore.QObject):
         if setting_name in ['ramp_send_initial_trigger','ramp_send_trigger','ramp_reverse','ramp_reset']:   #boolean
             if setting_value not in (True, False, 0, 1, '0', '1', 'true', 'false'):
                 self.logger.error(f"{setting_name} must be a boolean(-like) variable.")
-                flag_emit_current_settings = True
+                lag_emit_current_settings = True
             else:
                 setting_value = bool(setting_value)
                 flag_succesful = True
