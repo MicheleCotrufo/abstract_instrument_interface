@@ -382,15 +382,6 @@ class abstract_interface(QtCore.QObject):
     @staticmethod
     def check_property_until(property_to_check, values_list, actions_list, refresh_time=0.1):
         '''
-        property_to_check: function that takes no parameter in input
-            Property whose value will be periodically checked
-        values_list : list
-            List of possible values to be checked
-        actions_list : list of list of functions, 
-            The format must be actions_list = [ [Value1Func1, Value1Func2, ...], [Value2Func1, Value2Func2, ...], ... , [ValueNFunc1, ValueNFunc2, ...] ]
-        refresh_time: float (default = 0.01) 
-            Set the time interval (in s) after which the value of property_to_check will be checked again
-
         It periodically evaluates the value returned by the function property_to_check. 
         - If property_to_check() is equal to values_list[i], it performs all the actions defined in the list actions_list[i] (which is a list of functions). 
         It then calls itself again after a time defined by refresh_time, unless values_list[i] is the last object of the list values_list. In this case it does
@@ -406,6 +397,16 @@ class abstract_interface(QtCore.QObject):
             
             check_property_until( property_to_check = foo_test, values_list, actions_list)
 
+        Parameters
+        ----------
+        property_to_check: function that takes no parameter in input
+            Property whose value will be periodically checked
+        values_list : list
+            List of possible values to be checked
+        actions_list : list of list of functions, 
+            The format must be actions_list = [ [Value1Func1, Value1Func2, ...], [Value2Func1, Value2Func2, ...], ... , [ValueNFunc1, ValueNFunc2, ...] ]
+        refresh_time: float (default = 0.01) 
+            Set the time interval (in s) after which the value of property_to_check will be checked again
         '''
         call_again = True
         for index,value in enumerate(values_list):
@@ -442,7 +443,53 @@ class abstract_interface(QtCore.QObject):
                 self.logger.error(f"{e}")
         
 class abstract_gui():
-    def __init__(self,interface=None,parent=None):
+    """
+    Abstract base class for PyQt5 GUI panels associated with a laboratory instrument
+    interface.
+
+    Subclasses are expected to implement ``create_widgets()``, which builds all Qt
+    widgets and stores the top-level layout in ``self.container``, and then call
+    :meth:`initialize` to attach that layout to the parent widget. The typical
+    call order in a subclass ``__init__`` is::
+
+        super().__init__(interface, parent)
+        self.create_widgets()
+        self.initialize()
+
+    This class does not inherit from any Qt class. It relies on the ``parent``
+    widget (passed in by the caller) to host the layout produced by
+    ``create_widgets()``.
+
+    Instance attributes
+    -------------------
+    interface : abstract_interface or None
+        The interface (model) object that this GUI controls. Provides access to
+        device state, settings, signals, and methods such as ``connect_device``
+        and ``update``.
+    parent : Qt.QWidget or None
+        The Qt widget that hosts this GUI. :meth:`initialize` sets its layout to
+        ``self.container`` and resizes it to its minimum size.
+    container : Qt.QLayout or Qt.QGroupBox
+        The top-level layout object produced by ``create_widgets()`` in the
+        subclass. Not present until ``create_widgets()`` has been called.
+
+    Methods
+    -------
+    initialize()
+        Assign ``self.container`` as the layout of ``self.parent`` and resize the
+        parent to its minimum size. Must be called after ``create_widgets()``.
+    disable_widget(widgets)
+        Call ``setEnabled(False)`` on each widget in an iterable, skipping
+        ``None`` entries.
+    enable_widget(widgets)
+        Call ``setEnabled(True)`` on each widget in an iterable, skipping
+        ``None`` entries.
+    create_panel_connection_listdevices()
+        Build and return the standard "Connect / device list / refresh" horizontal
+        panel shared by most instrument GUIs.
+    """
+
+      def __init__(self,interface=None,parent=None):
         """
         Parameters
         ----------
@@ -506,15 +553,30 @@ class abstract_gui():
 
     def create_panel_connection_listdevices(self):
         """
-        Many instruments require a similar part of the GUI: a row having a button for connection/disconnection, a combobox to list available devices, and a button to refresh the list of 
-        available devices. To avoid repeating code, we define here a method which creates this general part of the GUI
+        Build the standard connection panel shared by most instrument GUIs.
+
+        Creates a horizontal row containing a "Connect" button, a "Devices:" label,
+        a combo box listing available devices, and a refresh icon button. To avoid
+        repeating this boilerplate in every subclass, the panel is built here once
+        and the widgets are returned so that the caller can store them as instance
+        attributes and wire up their signal connections.
 
         Returns
         -------
-         Qt.QHBoxLayout
-            A horizontal box layout containing the relevant GUI
+        Qt.QHBoxLayout
+            A horizontal box layout containing all four widgets in the order:
+            Connect button, label, refresh button, device combo box.
         dict
-            Dictionary, the keys are the names of the widgets, the values are the widgets
+            Dictionary mapping widget names to widget objects. Keys are:
+
+            ``'button_ConnectDevice'`` : Qt.QPushButton
+                Button used to connect to or disconnect from the selected device.
+            ``'label_DeviceList'`` : Qt.QLabel
+                Static label reading "Devices:".
+            ``'button_RefreshDeviceList'`` : Qt.QPushButton
+                Icon button (refresh icon) used to rescan available devices.
+            ``'combo_Devices'`` : Qt.QComboBox
+                Drop-down list populated with the names of available devices.
         """
         hbox_panel_connection_listdevices = Qt.QHBoxLayout()
         button_ConnectDevice = Qt.QPushButton("Connect")
