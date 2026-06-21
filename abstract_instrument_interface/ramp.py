@@ -1,3 +1,4 @@
+''' Defines the ramp and ramp_gui classes, used by instrument interfaces to sweep a parameter and send triggers.'''
 ''' Note: most of docstrings in this file have been generated automatically by Claude. AI can make mistakes'''
 
 from abstract_instrument_interface import abstract_classes
@@ -92,9 +93,9 @@ class ramp(QtCore.QObject):
             'ramp_wait_2': 1,               #Wait time (in s) after each (potential) call to trigger, before doing the new ramp step
             'ramp_numb_steps': 10,          #Number of steps in the ramp
             'ramp_repeat': 1,               #How many times the ramp is repeated
-            'ramp_reverse': 1,              #If True (or 1), it repeats the ramp in reverse
-            'ramp_send_initial_trigger': 1, #If True (or 1), it calls self.func_trigger before starting the ramp
-            'ramp_reset' : 1                #If True (or 1), it resets the value of the instrument to the initial one after the ramp is done
+            'ramp_reverse': True,           #If True, it repeats the ramp in reverse
+            'ramp_send_initial_trigger': True, #If True, it calls self.func_trigger before starting the ramp
+            'ramp_reset' : True             #If True, it resets the value of the instrument to the initial one after the ramp is done
              }
         self.numb_steps_done = 0            #Internal variable used to keep track of how many ramp steps have been already performed (Note: here ramp step means only changing a certain parameter, not waiting or sending triggers)
         self.numb_steps_total = 0           #Internal variable used to keep track of how many ramp steps there are in total (Note: here ramp step means only changing a certain parameter, not waiting or sending triggers)
@@ -209,46 +210,46 @@ class ramp(QtCore.QObject):
         any
             The current (post-update, or unchanged-if-invalid) value of the setting.
         '''
-        flag_succesful = False
+        flag_successful = False
         flag_emit_current_settings = False
         if setting_name == 'ramp_step_size':                                                                #float, positive
-            try: 
+            try:
                 setting_value = float(setting_value)
                 if setting_value <= 0:
                     raise ValueError
-                flag_succesful = True
+                flag_successful = True
             except ValueError:
                 self.logger.error(f"Ramp step size must be a valid and positive number.")
                 flag_emit_current_settings = True
         if setting_name in ['ramp_wait_1' ,'ramp_wait_2']:                                                  #float, non-negative
-            try: 
+            try:
                 setting_value = float(setting_value)
                 if setting_value < 0:
                     raise ValueError
-                flag_succesful = True
+                flag_successful = True
             except ValueError:
                 self.logger.error(f"{setting_name} must be a valid and non-negative number.")
                 flag_emit_current_settings = True
         if setting_name in ['ramp_send_initial_trigger','ramp_send_trigger','ramp_reverse','ramp_reset']:   #boolean
             if setting_value not in (True, False, 0, 1, '0', '1', 'true', 'false'):
                 self.logger.error(f"{setting_name} must be a boolean(-like) variable.")
-                lag_emit_current_settings = True
+                flag_emit_current_settings = True
             else:
                 setting_value = bool(setting_value)
-                flag_succesful = True
+                flag_successful = True
         if setting_name in ['ramp_numb_steps','ramp_repeat']:                                               #integer, positive
-            try: 
+            try:
                 setting_value = int(setting_value)
                 if setting_value <= 0:
                     raise ValueError
-                flag_succesful = True
+                flag_successful = True
             except ValueError:
                 self.logger.error(f"{setting_name} must be a positive integer.")
                 flag_emit_current_settings = True
-                
+
         if self.settings[setting_name] == setting_value:
-            flag_succesful = False
-        if flag_succesful:
+            flag_successful = False
+        if flag_successful:
             self.settings[setting_name] = setting_value
             if log:
                 self.logger.info(f"{setting_name} is now set to {setting_value}.")
@@ -266,7 +267,9 @@ class ramp(QtCore.QObject):
         
     def send_ramp_status(self):
         '''
-        Uses the sig_ramp_info signal to emit a text string with info on the current ramp status
+        Uses the :attr:`sig_ramp_info` signal to emit a two-element list ``[ramp_status_string,
+        ramp_connection_string]`` with info on the current ramp status and any parent/child
+        ramp connection, for display in a status label in the GUI.
         '''
         info_ramp_status = ''
         info_ramp_connection = ''

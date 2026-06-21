@@ -25,10 +25,10 @@ class abstract_interface(QtCore.QObject):
     output : dict
         Dictionary holding the most recently acquired output data of this interface.
         Subclasses typically populate it in their ``update`` method (e.g.
-        ``self.output['Power'] = value``). Important: the dictionary must be 
+        ``self.output['Power'] = value``). Important: the dictionary must be
         re-assigned as an instance attribute in the subclass ``__init__``.
-        Otherwise it is shared across all instances of a given
-        subclass unless, which would lead to undesired effects. 
+        Otherwise, it is shared across all instances of a given
+        subclass, which would lead to undesired effects.
     settings : dict
         Dictionary of persistent settings for this interface (e.g. refresh time,
         default wavelength). Typically populated with default values in the subclass
@@ -324,7 +324,8 @@ class abstract_interface(QtCore.QObject):
             if delay < 0:
                 raise ValueError()
         except (TypeError,ValueError):
-            self.logger.error(f"Input parameter delay must be a valid and positive number.")  
+            self.logger.error(f"Input parameter delay must be a valid and positive number.")
+            return
         self.logger.info(f"Creating a trigger for this device...")
         self.trigger = [external_function, delay]
 
