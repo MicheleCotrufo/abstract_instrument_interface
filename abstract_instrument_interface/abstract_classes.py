@@ -489,7 +489,7 @@ class abstract_gui():
         panel shared by most instrument GUIs.
     """
 
-      def __init__(self,interface=None,parent=None):
+    def __init__(self,interface=None,parent=None):
         """
         Parameters
         ----------
