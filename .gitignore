@@ -1,4 +1,6 @@
 /.vs/
+/.git/
+/abstract_instrument_interface/__pycache__/
 /.vscode/
 /build/
 /tests/
