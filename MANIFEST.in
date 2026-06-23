@@ -1,2 +1,3 @@
 include abstract_instrument_interface/graphics/*
 include abstract_instrument_interface/*.json
+include requirements.txt
